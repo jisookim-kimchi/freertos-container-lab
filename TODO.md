@@ -21,15 +21,3 @@
 ⑩ Container memory isolation
 
 
-Container VA Space
-
-0x40000000 ────────┐
-                   │ Text
-                   │ 64 KiB
-0x40010000 ────────┤
-                   │ Data + BSS
-                   │ 64 KiB
-0x40020000 ────────┤
-                   │ Stack
-                   │ 64 KiB
-0x40030000 ────────┘

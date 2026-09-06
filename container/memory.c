@@ -37,7 +37,7 @@ struct PageTable *PageTableAllocate(uint8_t level)
                 if (!(L0_bitmap & (1 << i)))
                 {
                     L0_bitmap |= (1 << i);
-                    L0_pool[i].phy_base = L0_PAGE_TABLE_BASE + i * CONTAINER_PAGE_SIZE;
+                    L0_pool[i].phy_base = L0_PAGE_PHY_TABLE_BASE + i * CONTAINER_PAGE_SIZE;
                     return &L0_pool[i];
                 }
             }
@@ -49,7 +49,7 @@ struct PageTable *PageTableAllocate(uint8_t level)
             if (!(L1_bitmap & (1 << i)))
             {
                 L1_bitmap |= (1 << i);
-                L1_pool[i].phy_base = L1_PAGE_TABLE_BASE + i * CONTAINER_PAGE_SIZE;
+                L1_pool[i].phy_base = L1_PAGE_PHY_TABLE_BASE + i * CONTAINER_PAGE_SIZE;
                 return &L1_pool[i];
             }
         }
@@ -61,7 +61,7 @@ struct PageTable *PageTableAllocate(uint8_t level)
             if (!(L2_bitmap & (1 << i)))
             {
                 L2_bitmap |= (1 << i);
-                L2_pool[i].phy_base = L2_PAGE_TABLE_BASE + i * CONTAINER_PAGE_SIZE;
+                L2_pool[i].phy_base = L2_PAGE_PHY_TABLE_BASE + i * CONTAINER_PAGE_SIZE;
                 return &L2_pool[i];
             }
         }
@@ -73,7 +73,7 @@ struct PageTable *PageTableAllocate(uint8_t level)
             if (!(L3_bitmap & (1 << i)))
             {
                 L3_bitmap |= (1 << i);
-                L3_pool[i].phy_base = L3_PAGE_TABLE_BASE + i * CONTAINER_PAGE_SIZE;
+                L3_pool[i].phy_base = L3_PAGE_PHY_TABLE_BASE + i * CONTAINER_PAGE_SIZE;
                 return &L3_pool[i];
             }
         }
@@ -151,20 +151,81 @@ struct PageTable *PageTableGet(uint8_t index, uint8_t level)
     return NULL;
 }
 
-// void PageTableLink(struct PageTable *root_table, uint8_t level, struct MemoryArea *area)
-// {
-//     if (root_table == NULL || area == NULL)
-//         return;
+struct PageTable *GetTableFromPA(uint8_t level, uintptr_t pa)
+{
+    if (pa == 0)
+        return NULL;
 
-//     if (level >= PT_LEVELS)
-//         return;
+    if (level == 1)
+    {
+        uint32_t idx = (pa - L1_PAGE_PHY_TABLE_BASE) / CONTAINER_PAGE_SIZE;
+        return PageTableGet(idx, 1);
+    }
+    else if (level == 2)
+    {
+        uint32_t idx = (pa - L2_PAGE_PHY_TABLE_BASE) / CONTAINER_PAGE_SIZE;
+        return PageTableGet(idx, 2);
+    }
+    else if (level == 3)
+    {
+        uint32_t idx = (pa - L3_PAGE_PHY_TABLE_BASE) / CONTAINER_PAGE_SIZE;
+        return PageTableGet(idx, 3);
+    }
 
-//     if (level == 0)
-//     {
-//         uintptr_t virt_addr = area->virt_base;
+    return NULL;
+}
 
-//         uint64_t L0_entry_index =
-//             (virt_addr >> 39) & 0b111111111;
-//         root_table->entries[L0_entry_index].next_level_phy_base = L1_table->phy_base;
-//     }
-// }
+void page_table_map(struct PageTable *root_table, uint8_t level, struct MemoryArea *area)
+{
+    // Get required_page_count */
+    uintptr_t virt_mem = area->virt_base;
+    uintptr_t phy_mem = area->phy_base;
+    size_t required_page_count = (area->size + CONTAINER_PAGE_SIZE - 1) / CONTAINER_PAGE_SIZE;
+
+    
+    for (size_t i = 0; i < required_page_count; i++)
+    {
+        uintptr_t va = virt_mem + (i * CONTAINER_PAGE_SIZE);
+        uintptr_t pa = phy_mem + (i * CONTAINER_PAGE_SIZE);
+        uint64_t L0_entry_index = (va >> 39) & 0b111111111;
+        uint64_t L1_entry_index = (va >> 30) & 0b111111111;
+        uint64_t L2_entry_index = (va >> 21) & 0b111111111;
+        uint64_t L3_entry_index = (va >> 12) & 0b111111111;
+        struct PageTable *L1 = NULL;
+        if (root_table->entries[L0_entry_index].next_level_phy_base == 0)
+        {
+            L1 = PageTableAllocate(1);
+            root_table->entries[L0_entry_index].next_level_phy_base = L1->phy_base;
+        }
+        else
+        {
+            L1 = GetTableFromPA(1, root_table->entries[L0_entry_index].next_level_phy_base);
+        }
+        struct PageTable *L2 = NULL;
+        if (L1->entries[L1_entry_index].next_level_phy_base == 0)
+        {
+            L2 = PageTableAllocate(2);
+            L1->entries[L1_entry_index].next_level_phy_base = L2->phy_base;
+        }
+        else
+        {
+            L2 = GetTableFromPA(2, L1->entries[L1_entry_index].next_level_phy_base);
+        }
+        struct PageTable *L3 = NULL;
+        if (L2->entries[L2_entry_index].next_level_phy_base == 0)
+        {
+            L3 = PageTableAllocate(3);
+            L2->entries[L2_entry_index].next_level_phy_base = L3->phy_base;
+        }
+        else
+        {
+            L3 = GetTableFromPA(3, L2->entries[L2_entry_index].next_level_phy_base);
+        }
+        L3->entries[L3_entry_index].next_level_phy_base = pa;
+        L3->entries[L3_entry_index].permission = area->permission;
+    }
+    return ;
+}
+
+// MMU ! Hardware paprt
+

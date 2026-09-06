@@ -11,10 +11,10 @@ static uint8_t L1_bitmap;
 static uint8_t L2_bitmap;
 static uint16_t L3_bitmap;
 
-#define L0_PAGE_TABLE_BASE 0x40100000
-#define L1_PAGE_TABLE_BASE 0x40200000
-#define L2_PAGE_TABLE_BASE 0x40300000
-#define L3_PAGE_TABLE_BASE 0x40400000
+#define L0_PAGE_PHY_TABLE_BASE 0x40100000
+#define L1_PAGE_PHY_TABLE_BASE 0x40200000
+#define L2_PAGE_PHY_TABLE_BASE 0x40300000
+#define L3_PAGE_PHY_TABLE_BASE 0x40400000
 
 /*
     *base : starting address of memory area.
@@ -41,6 +41,7 @@ struct MemoryArea
 struct PageTableEntry
 {
     uintptr_t next_level_phy_base;
+    uint8_t permission;
 };
 
 struct PageTable

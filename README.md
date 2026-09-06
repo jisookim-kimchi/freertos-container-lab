@@ -68,3 +68,9 @@ KiB= 16 × 2 MiB = 32 MiB(max mapped memory)
 [47:39] [38:30] [29:21] [20:12] [11:0]
    L0      L1      L2      L3    offset
 
+
+`L0_PAGE_TABLE_BASE` = 0x40100000;
+MemoryArea -> virt_base;
+
+`each page table` has `512 entries`. 
+`total page tables` = 29.
