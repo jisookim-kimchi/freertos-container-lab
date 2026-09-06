@@ -1,5 +1,15 @@
 #include "memory.h"
 
+static uint8_t L0_bitmap = 0;
+static uint8_t L1_bitmap = 0;
+static uint8_t L2_bitmap = 0;
+static uint16_t L3_bitmap = 0;
+
+static struct PageTable L0_pool[MAX_L0_TABLES];
+static struct PageTable L1_pool[MAX_L1_TABLES];
+static struct PageTable L2_pool[MAX_L2_TABLES];
+static struct PageTable L3_pool[MAX_L3_TABLES];
+
 void MemoryAreaInit( struct MemoryArea *area, void *virt_base, void *phy_base, size_t size, uint8_t permission)
 {
     if (area == NULL || size == 0)
@@ -226,6 +236,4 @@ void page_table_map(struct PageTable *root_table, uint8_t level, struct MemoryAr
     }
     return ;
 }
-
-// MMU ! Hardware paprt
 

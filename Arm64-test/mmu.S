@@ -5,7 +5,7 @@
 .global flush_tlb           //Translation Lookaside Buffer.
 
 enable_mmu:
-    MSR TTBR0_EL1, x0       // 1. LO root page table address register.
+    MSR TTBR0_EL1, x0       // 1. LO root page table physic's address register.
     MSR TCR_EL1, x1         // 2. 48 bit VA / 4kb page table size inform to MMU.
     MSR MAIR_EL1, x2        // 3. MAIR register write, where cache on/off
     ISB                     // Synchronization.

@@ -4,12 +4,7 @@
 #include "../config.h"
 #include <stdint.h>
 #include <stdbool.h>
-#include <string.h>
-
-static uint8_t L0_bitmap;
-static uint8_t L1_bitmap;
-static uint8_t L2_bitmap;
-static uint16_t L3_bitmap;
+#include <stddef.h>
 
 #define L0_PAGE_PHY_TABLE_BASE 0x40100000
 #define L1_PAGE_PHY_TABLE_BASE 0x40200000
@@ -17,11 +12,7 @@ static uint16_t L3_bitmap;
 #define L3_PAGE_PHY_TABLE_BASE 0x40400000
 
 /*
-    *base : starting address of memory area.
-    *size : size of memory area.
-    *permission : permission of memory area.
-    text (code) -> .data/.bss -> stack
-      r/x       ->    r/w     ->  r/w
+    Memory Area structure
 */
 struct MemoryArea
 {
@@ -32,11 +23,7 @@ struct MemoryArea
 };
 
 /*
-    level 0 ->
-    level 1 ->
-    level 2 ->
-    level 3 ->
-    output physical address.
+    Page Table Entry
 */
 struct PageTableEntry
 {
@@ -44,25 +31,29 @@ struct PageTableEntry
     uint8_t permission;
 };
 
+/*
+    Page Table Structure (512 entries per table)
+*/
 struct PageTable
 {
     uintptr_t phy_base;
     struct PageTableEntry entries[PT_ENTRIES];
 };
 
-static struct PageTable L0_pool[MAX_L0_TABLES];
-static struct PageTable L1_pool[MAX_L1_TABLES];
-static struct PageTable L2_pool[MAX_L2_TABLES];
-static struct PageTable L3_pool[MAX_L3_TABLES];
+void MemoryAreaInit(struct MemoryArea *area, void *virt_base, void *phy_base, size_t size, uint8_t permission);
+bool IsInMemoryArea(struct MemoryArea *area, void *addr);
+bool IsAccessAllowed(struct MemoryArea *area, uint8_t permission);
 
-void PageTableMap
-(
-    struct PageTable *L0,
-    struct PageTable *L1,
-    struct PageTable *L2,
-    struct PageTable *L3,
-    uintptr_t virt_addr,
-    uintptr_t phy_addr
-);
+struct PageTable *PageTableAllocate(uint8_t level);
+void PageTableFree(uint8_t level, struct PageTable *table);
+struct PageTable *PageTableGet(uint8_t index, uint8_t level);
+struct PageTable *GetTableFromPA(uint8_t level, uintptr_t pa);
 
-#endif
+void page_table_map(struct PageTable *root_table, uint8_t level, struct MemoryArea *area);
+
+/* Hardware MMU Assembly Functions (mmu.S) */
+extern void enable_mmu(uintptr_t L0_table_pa, uint64_t tcr, uint64_t mair);
+extern void disable_mmu(void);
+extern void flush_tlb(void);
+
+#endif 
