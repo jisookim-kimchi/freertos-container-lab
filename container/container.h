@@ -6,6 +6,9 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <timers.h>
+#include "../config.h"
+#include "memory.h"
+#include <stdint.h>
 
 enum State
 {
@@ -16,7 +19,9 @@ enum State
     DEAD,
 };
 
-// UBaseType_t : unsigned int 
+
+
+// UBaseType_t : unsigned int
 struct Container
 {
     BaseType_t id;
@@ -32,7 +37,7 @@ struct Container
     StaticTask_t *tcb;
 
     enum State state;
-
+    struct MemoryArea mem_areas[CONTAINER_MEMORY_AREAS];
 };
 
 BaseType_t MakeContainer(struct Container *c, TaskFunction_t task_func, const char *name, configSTACK_DEPTH_TYPE stack_depth, void *task_func_param, UBaseType_t priority, StackType_t *stack, StaticTask_t *tcb);
@@ -43,4 +48,5 @@ BaseType_t RestartContainer(struct Container* c);
 BaseType_t DeleteContainer(struct Container* c);
 enum State ContainerStatus(struct Container* c);
 
-#endif /* CONTAINER_H */
+
+#endif 
