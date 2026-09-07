@@ -43,6 +43,14 @@
 #ifndef FREERTOS_CONFIG_H
 #define FREERTOS_CONFIG_H
 
+
+/*From container/container.h
+  define traceTASK_SWICHTED_IN() == ContainerOnTaskSwitchedIn()
+  This function is called when a task is switched in
+*/
+extern void ContainerTaskSwitchHook(void);
+#define traceTASK_SWITCHED_IN()    ContainerTaskSwitchHook()
+
 /******************************************************************************/
 /* Hardware description related definitions. **********************************/
 /******************************************************************************/

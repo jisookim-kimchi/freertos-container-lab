@@ -64,20 +64,24 @@ int main()
     /* Task 1 설정 및 정적 메모리 */
     static StackType_t stack_buffer1[256];
     static StaticTask_t task_buffer1;
-
  
-    MakeContainer(&container1, myTask, "kimchi", 256, NULL, 1, stack_buffer1, &task_buffer1);
-    StartContainer(&container1);
+    // MakeContainer(&container1, myTask, "kimchi", 256, NULL, 1, stack_buffer1, &task_buffer1);
+    // StartContainer(&container1);
     
     /* Task 2 설정 및 정적 메모리 */
-    static StackType_t stack_buffer2[256];
-    static StaticTask_t task_buffer2;
+    // static StackType_t stack_buffer2[256];
+    // static StaticTask_t task_buffer2;
 
-    MakeContainer(&container2, myTask2, "kimbap", 256, NULL, 2, stack_buffer2, &task_buffer2);
-    StartContainer(&container2);
+    // MakeContainer(&container2, myTask2, "kimbap", 256, NULL, 2, stack_buffer2, &task_buffer2);
+    // StartContainer(&container2);
 
+    MakeContainer(&container1, myTask, "kimchi", 256, NULL, 1, stack_buffer1, &task_buffer1);
+    /* Map Container 1's isolated RAM and UART */
+    ContainerAddMemoryArea(&container1, (void *)0x40000000, (void *)0x40000000, 0x100000, MEM_READ | MEM_WRITE | MEM_EXEC);
+    ContainerAddMemoryArea(&container1, (void *)0x09000000, (void *)0x09000000, 0x1000,   MEM_READ | MEM_WRITE);
+    StartContainer(&container1);
+    
     /* FreeRTOS 스케줄러 시작 */
     vTaskStartScheduler();
-  
     return 0;
 }

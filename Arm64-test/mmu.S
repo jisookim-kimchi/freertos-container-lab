@@ -3,6 +3,7 @@
 .global enable_mmu
 .global disable_mmu
 .global flush_tlb           //Translation Lookaside Buffer.
+.global switch_mmu_table    //change MMU table.
 
 enable_mmu:
     MSR TTBR0_EL1, x0       // 1. LO root page table physic's address register.
@@ -30,5 +31,11 @@ flush_tlb:
     DSB SY                  // Data Synchronization Barrier
     TLBI VMALLE1IS          // TLB Invalidate
     ISB                     
+
+    RET
+
+switch_mmu_table:
+    MSR TTBR0_EL1, x0       // 1. LO root page table physic's address register.
+    ISB
 
     RET

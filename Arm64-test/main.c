@@ -31,7 +31,7 @@ void main(void)
     page_table_map(root_table, 0, &ram_area);
     page_table_map(root_table, 0, &uart_area);
     uart_puts("2\n");
-    enable_mmu(root_table->phy_base, TCR_VALUE, MAIR_VALUE); //TODO error need to debug.
+    enable_mmu((uintptr_t)root_table, TCR_VALUE, MAIR_VALUE); //TODO error need to debug.
     uart_puts("3\n");
     uart_puts("MMU ON\n");
     //need to check 

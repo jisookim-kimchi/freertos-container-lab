@@ -5,12 +5,12 @@ static uint8_t L1_bitmap = 0;
 static uint8_t L2_bitmap = 0;
 static uint16_t L3_bitmap = 0;
 
-static struct PageTable L0_pool[MAX_L0_TABLES];
-static struct PageTable L1_pool[MAX_L1_TABLES];
-static struct PageTable L2_pool[MAX_L2_TABLES];
-static struct PageTable L3_pool[MAX_L3_TABLES];
+static struct PageTable L0_pool[MAX_L0_TABLES] __attribute__((aligned(4096)));
+static struct PageTable L1_pool[MAX_L1_TABLES] __attribute__((aligned(4096)));
+static struct PageTable L2_pool[MAX_L2_TABLES] __attribute__((aligned(4096)));
+static struct PageTable L3_pool[MAX_L3_TABLES] __attribute__((aligned(4096)));
 
-void MemoryAreaInit( struct MemoryArea *area, void *virt_base, void *phy_base, size_t size, uint8_t permission)
+void MemoryAreaInit(struct MemoryArea *area, void *virt_base, void *phy_base, size_t size, uint8_t permission)
 {
     if (area == NULL || size == 0)
         return;
@@ -41,16 +41,15 @@ bool IsAccessAllowed(struct MemoryArea *area, uint8_t permission)
 struct PageTable *PageTableAllocate(uint8_t level)
 {   
     if (level == 0)
+    {
+        for (int i = 0; i < MAX_L0_TABLES; i++)
         {
-            for (int i = 0; i < MAX_L0_TABLES; i++)
+            if (!(L0_bitmap & (1 << i)))
             {
-                if (!(L0_bitmap & (1 << i)))
-                {
-                    L0_bitmap |= (1 << i);
-                    L0_pool[i].phy_base = L0_PAGE_PHY_TABLE_BASE + i * CONTAINER_PAGE_SIZE;
-                    return &L0_pool[i];
-                }
+                L0_bitmap |= (1 << i);
+                return &L0_pool[i];
             }
+        }
     }
     else if (level == 1)
     {
@@ -59,7 +58,6 @@ struct PageTable *PageTableAllocate(uint8_t level)
             if (!(L1_bitmap & (1 << i)))
             {
                 L1_bitmap |= (1 << i);
-                L1_pool[i].phy_base = L1_PAGE_PHY_TABLE_BASE + i * CONTAINER_PAGE_SIZE;
                 return &L1_pool[i];
             }
         }
@@ -71,7 +69,6 @@ struct PageTable *PageTableAllocate(uint8_t level)
             if (!(L2_bitmap & (1 << i)))
             {
                 L2_bitmap |= (1 << i);
-                L2_pool[i].phy_base = L2_PAGE_PHY_TABLE_BASE + i * CONTAINER_PAGE_SIZE;
                 return &L2_pool[i];
             }
         }
@@ -83,7 +80,6 @@ struct PageTable *PageTableAllocate(uint8_t level)
             if (!(L3_bitmap & (1 << i)))
             {
                 L3_bitmap |= (1 << i);
-                L3_pool[i].phy_base = L3_PAGE_PHY_TABLE_BASE + i * CONTAINER_PAGE_SIZE;
                 return &L3_pool[i];
             }
         }
@@ -96,35 +92,26 @@ void PageTableFree(uint8_t level, struct PageTable *table)
     if (level == 0)
     {
         uint8_t index = table - L0_pool;
-
         if (index < MAX_L0_TABLES)
-        {
             L0_bitmap &= ~(1 << index);
-        }
     }
     else if (level == 1)
     {
         uint8_t index = table - L1_pool;
         if (index < MAX_L1_TABLES)
-        {
             L1_bitmap &= ~(1 << index);
-        }
     }
     else if (level == 2)
     {
         uint8_t index = table - L2_pool;
         if (index < MAX_L2_TABLES)
-        {
             L2_bitmap &= ~(1 << index);
-        }
     }
     else if (level == 3)
     {
         uint8_t index = table - L3_pool;
         if (index < MAX_L3_TABLES)
-        {
             L3_bitmap &= ~(1 << index);
-        }
     }
 }
 
@@ -136,28 +123,24 @@ struct PageTable *PageTableGet(uint8_t index, uint8_t level)
             return NULL;
         return &L0_pool[index];
     }
-
     if (level == 1)
     {
         if (index >= MAX_L1_TABLES)
             return NULL;
         return &L1_pool[index];
     }
-
     if (level == 2)
     {
         if (index >= MAX_L2_TABLES)
             return NULL;
         return &L2_pool[index];
     }
-
     if (level == 3)
     {
         if (index >= MAX_L3_TABLES)
             return NULL;
         return &L3_pool[index];
     }
-
     return NULL;
 }
 
@@ -165,34 +148,15 @@ struct PageTable *GetTableFromPA(uint8_t level, uintptr_t pa)
 {
     if (pa == 0)
         return NULL;
-
-    if (level == 1)
-    {
-        uint32_t idx = (pa - L1_PAGE_PHY_TABLE_BASE) / CONTAINER_PAGE_SIZE;
-        return PageTableGet(idx, 1);
-    }
-    else if (level == 2)
-    {
-        uint32_t idx = (pa - L2_PAGE_PHY_TABLE_BASE) / CONTAINER_PAGE_SIZE;
-        return PageTableGet(idx, 2);
-    }
-    else if (level == 3)
-    {
-        uint32_t idx = (pa - L3_PAGE_PHY_TABLE_BASE) / CONTAINER_PAGE_SIZE;
-        return PageTableGet(idx, 3);
-    }
-
-    return NULL;
+    return (struct PageTable *)pa;
 }
 
 void page_table_map(struct PageTable *root_table, uint8_t level, struct MemoryArea *area)
 {
-    // Get required_page_count */
     uintptr_t virt_mem = area->virt_base;
     uintptr_t phy_mem = area->phy_base;
     size_t required_page_count = (area->size + CONTAINER_PAGE_SIZE - 1) / CONTAINER_PAGE_SIZE;
 
-    
     for (size_t i = 0; i < required_page_count; i++)
     {
         uintptr_t va = virt_mem + (i * CONTAINER_PAGE_SIZE);
@@ -201,39 +165,53 @@ void page_table_map(struct PageTable *root_table, uint8_t level, struct MemoryAr
         uint64_t L1_entry_index = (va >> 30) & 0b111111111;
         uint64_t L2_entry_index = (va >> 21) & 0b111111111;
         uint64_t L3_entry_index = (va >> 12) & 0b111111111;
+        
         struct PageTable *L1 = NULL;
-        if (root_table->entries[L0_entry_index].next_level_phy_base == 0)
+        if (root_table->entries[L0_entry_index] == 0)
         {
             L1 = PageTableAllocate(1);
-            root_table->entries[L0_entry_index].next_level_phy_base = L1->phy_base;
+            root_table->entries[L0_entry_index] = ((uint64_t)L1) | ARM64_MMU_PTE_TABLE;
         }
         else
         {
-            L1 = GetTableFromPA(1, root_table->entries[L0_entry_index].next_level_phy_base);
+            uintptr_t L1_pa = root_table->entries[L0_entry_index] & ~0xFFFULL;
+            L1 = GetTableFromPA(1, L1_pa);
         }
+
         struct PageTable *L2 = NULL;
-        if (L1->entries[L1_entry_index].next_level_phy_base == 0)
+        if (L1->entries[L1_entry_index] == 0)
         {
             L2 = PageTableAllocate(2);
-            L1->entries[L1_entry_index].next_level_phy_base = L2->phy_base;
+            L1->entries[L1_entry_index] = ((uint64_t)L2) | ARM64_MMU_PTE_TABLE;
         }
         else
         {
-            L2 = GetTableFromPA(2, L1->entries[L1_entry_index].next_level_phy_base);
+            uintptr_t L2_pa = L1->entries[L1_entry_index] & ~0xFFFULL; 
+            L2 = GetTableFromPA(2, L2_pa);
         }
+
         struct PageTable *L3 = NULL;
-        if (L2->entries[L2_entry_index].next_level_phy_base == 0)
+        if (L2->entries[L2_entry_index] == 0)
         {
             L3 = PageTableAllocate(3);
-            L2->entries[L2_entry_index].next_level_phy_base = L3->phy_base;
+            L2->entries[L2_entry_index] = ((uint64_t)L3) | ARM64_MMU_PTE_TABLE;
         }
         else
         {
-            L3 = GetTableFromPA(3, L2->entries[L2_entry_index].next_level_phy_base);
+            uintptr_t L3_pa = L2->entries[L2_entry_index] & ~0xFFFULL;
+            L3 = GetTableFromPA(3, L3_pa);
         }
-        L3->entries[L3_entry_index].next_level_phy_base = pa;
-        L3->entries[L3_entry_index].permission = area->permission;
+              uint64_t attr = 0;
+        if (area->virt_base == 0x09000000)
+        {
+            /* UART Device MMIO (Attr 1: Device-nGnRE, cache off) */
+            attr = (1ULL << 2);
+        }
+        else
+        {
+            /* Normal RAM (Attr 0: Normal Cacheable, cache on) */
+            attr = (0ULL << 2);
+        }
+        L3->entries[L3_entry_index] = pa | ARM64_MMU_PTE_PAGE | ARM64_MMU_PTE_AF | ARM64_MMU_PTE_INNER_SH | attr;
     }
-    return ;
 }
-

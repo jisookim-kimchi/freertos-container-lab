@@ -3,7 +3,13 @@
 
 /* Memory */
 #define CONTAINER_PAGE_SIZE       4096
-#define CONTAINER_MEMORY_AREAS    3
+/*
+    1. (.text)                                  r/w
+    2. data & bss                               r/w
+    3. stack                                    r/w
+    4. Device / MMIO (UART, peripherals)        r/w
+*/
+#define CONTAINER_MEMORY_LAYERS   4
 
 /* Permission */
 #define MEM_READ                  (1 << 0)
@@ -25,6 +31,18 @@
 
 #define MAX_PAGE_TABLES (MAX_L0_TABLES + MAX_L1_TABLES + MAX_L2_TABLES + MAX_L3_TABLES)
 
+/*
+bit[0] [1]
+    0	0	 Block	Lookup level is not 3
+    0   0    Reserved, treated as invalid	Lookup level is 3
+    1	1    Table	Lookup level is not 3
+    1   1	 Page	Lookup level is 3
+*/
+#define ARM64_MMU_PTE_TABLE 0x3
+
+#define ARM64_MMU_PTE_PAGE    (0x3ULL)            // Bit[1:0] = 11 (Page Descriptor)
+#define ARM64_MMU_PTE_AF      (1ULL << 10)        // Bit[10] = 1 (Access Flag)
+#define ARM64_MMU_PTE_INNER_SH (3ULL << 8)        // Bit[9:8] = Inner Shareable
 
 /* MAIR MEM ATTRIBUTE */
 #define MAIR_ATTR_NORMAL_RAM         0xFFULL // RAM cache on
@@ -42,5 +60,8 @@
 
 #define TCR_VALUE                    (TCR_TT0_SIZE_48BIT | TCR_IRGN0_WBWA | TCR_ORGN0_WBWA | \
                                       TCR_SH0_INNER | TCR_TG0_4KB | TCR_EPD1_DISABLE | TCR_IPS_48BIT_PA)
+
+#define ARM64_PTE_READONLY    (1ULL << 7)
+#define ARM64_PTE_EXEC_NEVER  (1ULL << 54)
 
 #endif
