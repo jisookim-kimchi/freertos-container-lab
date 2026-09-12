@@ -29,7 +29,7 @@
 #define MAX_L2_TABLES   8
 #define MAX_L3_TABLES   16
 
-#define MAX_PAGE_TABLES (MAX_L0_TABLES + MAX_L1_TABLES + MAX_L2_TABLES + MAX_L3_TABLES)
+#define MAX_PAGE_TABLES 29
 
 /*
 bit[0] [1]

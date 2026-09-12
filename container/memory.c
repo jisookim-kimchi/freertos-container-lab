@@ -201,17 +201,24 @@ void page_table_map(struct PageTable *root_table, uint8_t level, struct MemoryAr
             uintptr_t L3_pa = L2->entries[L2_entry_index] & ~0xFFFULL;
             L3 = GetTableFromPA(3, L3_pa);
         }
-              uint64_t attr = 0;
+        uint64_t attr = 0;
         if (area->virt_base == 0x09000000)
         {
-            /* UART Device MMIO (Attr 1: Device-nGnRE, cache off) */
-            attr = (1ULL << 2);
+            attr = (1ULL << 2); //uart cache off
         }
         else
         {
-            /* Normal RAM (Attr 0: Normal Cacheable, cache on) */
-            attr = (0ULL << 2);
+            attr = (0ULL << 2); //normal ram cache on
         }
-        L3->entries[L3_entry_index] = pa | ARM64_MMU_PTE_PAGE | ARM64_MMU_PTE_AF | ARM64_MMU_PTE_INNER_SH | attr;
+        uint64_t perm_bits = 0;
+        if (!(area->permission & MEM_WRITE))
+        {
+            perm_bits |= ARM64_PTE_READONLY; // AP[2] = 1: Read-Only
+        }
+        if (!(area->permission & MEM_EXEC))
+        {
+            perm_bits |= ARM64_PTE_EXEC_NEVER; // UXN = 1: Execute-Never
+        }
+        L3->entries[L3_entry_index] = pa | ARM64_MMU_PTE_PAGE | ARM64_MMU_PTE_AF | ARM64_MMU_PTE_INNER_SH | attr | perm_bits;
     }
 }
