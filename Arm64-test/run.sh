@@ -1,6 +1,5 @@
-`#!/bin/bash
+#!/bin/bash
 set -e
+./build.sh
 
-aarch64-linux-gnu-gcc -nostdlib -ffreestanding -g -T linker.ld Start.S mmu.S ../container/memory.c main.c -o kernel.elf
-`
 qemu-system-aarch64 -M virt -cpu cortex-a72 -nographic -kernel kernel.elf

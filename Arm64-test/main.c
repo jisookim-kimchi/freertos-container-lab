@@ -1,5 +1,6 @@
 #include "../container/memory.h"
 #include "../config.h"
+#include "../container/ring_buffer.h" 
 
 #define UART0_BASE 0x09000000
 
@@ -34,7 +35,19 @@ void main(void)
     enable_mmu((uintptr_t)root_table, TCR_VALUE, MAIR_VALUE); //TODO error need to debug.
     uart_puts("3\n");
     uart_puts("MMU ON\n");
-    //need to check 
+    /*
+        ring buffer test
+    */
+    static struct RingBuffer test_rb;
+    RingBufferInit(&test_rb);
+    char send_msg[] = "hello Empfanger!\n";
+    char recv_msg[64] = {0};
+    RingBufferWrite(&test_rb, send_msg, sizeof(send_msg));
+    uart_puts("Write to RingBuffer Success!\n");
+    RingBufferRead(&test_rb, recv_msg, sizeof(send_msg));
+    uart_puts("Read from RingBuffer: ");
+    uart_puts(recv_msg);
+
     while (1)
     {
     }
