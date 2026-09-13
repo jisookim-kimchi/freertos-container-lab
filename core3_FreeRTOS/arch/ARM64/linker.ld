@@ -2,7 +2,7 @@ ENTRY(_start)
 
 SECTIONS
 {
-    . = 0x40000000;
+    . = 0x7F000000;
 
     .text : 
     {
@@ -14,7 +14,7 @@ SECTIONS
         . = ALIGN(8);
         *(.rodata*)
     }
-    . = 0x40010000;
+    . = 0x7F010000;
     .data : 
     {
         . = ALIGN(8);
@@ -27,12 +27,12 @@ SECTIONS
         *(COMMON)        
         _bss_end = .;     
     }
-    . = 0x40020000;
+    . = 0x7F020000;
     .stack :
     {
         _stack_bottom = .;
     }
-    . = 0x40030000;
+    . = 0x7F030000;
 
     _stack_top = .;
 

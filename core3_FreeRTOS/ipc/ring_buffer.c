@@ -65,9 +65,15 @@ size_t RingBufferRead(struct RingBuffer *r_buffer, void *data, size_t size)
     uint32_t tail = r_buffer->tail;
 
     size_t occupied = (head - tail) & BUFFER_MASK;
-    if (size > occupied)
+    if (occupied == 0)
         return 0;
-    size_t read = size;
+
+    size_t to_read = size;
+    if (size < occupied)
+        to_read = size;
+    else
+        to_read = occupied;
+    size_t read = to_read;
     while (read--)
     {
         *dest++ = r_buffer->buffer[tail++];
@@ -76,9 +82,8 @@ size_t RingBufferRead(struct RingBuffer *r_buffer, void *data, size_t size)
     DataMemoryBarrier();
     r_buffer->tail = tail;
 
-    return size;
+    return to_read;
 }
-
 
 size_t RingBufferWrite_Atomic(struct RingBuffer *r_buffer, void *data, size_t size)
 {

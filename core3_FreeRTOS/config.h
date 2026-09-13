@@ -3,6 +3,8 @@
 
 /* Memory */
 #define CONTAINER_PAGE_SIZE       4096
+#define RTOS_MEMORY_BASE          0x7F000000
+#define RTOS_MEMORY_SIZE          0x200000
 /*
     1. (.text)                                  r/w
     2. data & bss                               r/w
@@ -63,5 +65,13 @@ bit[0] [1]
 
 #define ARM64_PTE_READONLY    (1ULL << 7)
 #define ARM64_PTE_EXEC_NEVER  (1ULL << 54)
+
+/*
+    RingBuffer
+*/
+#define SHARED_MEMORY_BASE               0x7E000000
+#define RTOS_SHARED_READ_ONLY_BASE       0x7E000000
+#define RTOS_SHARED_WRITE_WRITE_BASE     0x7E008000
+#define RING_BUFFER_SIZE                 0x8000
 
 #endif
