@@ -47,8 +47,8 @@ bit[0] [1]
 #define ARM64_MMU_PTE_INNER_SH (3ULL << 8)        // Bit[9:8] = Inner Shareable
 
 /* MAIR MEM ATTRIBUTE */
-#define MAIR_ATTR_NORMAL_RAM         0xFFULL // RAM cache on
-#define MAIR_ATTR_DEVICE_MMIO        0x04ULL // Device cache off
+#define MAIR_ATTR_NORMAL_RAM         0xFFULL // RAM cache on 1111 1111
+#define MAIR_ATTR_DEVICE_MMIO        0x04ULL // Device cache off 0000 0100
 #define MAIR_VALUE                   ((MAIR_ATTR_DEVICE_MMIO << 8) | (MAIR_ATTR_NORMAL_RAM << 0))
 
 /* TCR (Translation Control Register) */

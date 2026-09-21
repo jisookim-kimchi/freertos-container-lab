@@ -12,35 +12,23 @@ void main(void)
 
     struct MemoryArea ram_area, uart_area, shared_read_area, shared_write_area;
     MemoryAreaInit(&ram_area, (void *)RTOS_MEMORY_BASE, (void *)RTOS_MEMORY_BASE, RTOS_MEMORY_SIZE, MEM_READ | MEM_WRITE | MEM_EXEC);
-    MemoryAreaInit(&shared_read_area, (void *)RTOS_SHARED_READ_ONLY_BASE, (void *)RTOS_SHARED_READ_ONLY_BASE, RING_BUFFER_SIZE, MEM_READ);
+    MemoryAreaInit(&shared_read_area, (void *)RTOS_SHARED_READ_ONLY_BASE, (void *)RTOS_SHARED_READ_ONLY_BASE, RING_BUFFER_SIZE, MEM_READ | MEM_WRITE);
     MemoryAreaInit(&shared_write_area, (void *)RTOS_SHARED_WRITE_WRITE_BASE, (void *)RTOS_SHARED_WRITE_WRITE_BASE, RING_BUFFER_SIZE, MEM_READ | MEM_WRITE);
     MemoryAreaInit(&uart_area, (void *)0x09000000, (void *)0x09000000, 0x1000, MEM_READ | MEM_WRITE);
-    uart_puts("1\n");
 
     page_table_map(root_table, 0, &ram_area);
     page_table_map(root_table, 0, &shared_read_area);
     page_table_map(root_table, 0, &shared_write_area);
     page_table_map(root_table, 0, &uart_area);
 
-    uart_puts("2\n");
     enable_mmu((uintptr_t)root_table, TCR_VALUE, MAIR_VALUE);
-    uart_puts("3\n");
     uart_puts("MMU ON\n");
 
     struct RingBuffer *rtos_read_rb = (struct RingBuffer *)(RTOS_SHARED_READ_ONLY_BASE);
     struct RingBuffer *rtos_write_rb = (struct RingBuffer *)(RTOS_SHARED_WRITE_WRITE_BASE);
     
     RingBufferInit(rtos_write_rb);
-    // /* RingBuffer test */
-    // static struct RingBuffer test_rb;
-    // RingBufferInit(&test_rb);
-    // char send_msg[] = "hello Empfanger!\n";
-    // char recv_msg[64] = {0};
-    // RingBufferWrite(&test_rb, send_msg, sizeof(send_msg));
-    // uart_puts("RingBuffer Write Success\n");
-    // RingBufferRead(&test_rb, recv_msg, sizeof(send_msg));
-    // uart_puts("Read from RingBuffer: ");
-    // uart_puts(recv_msg);
+
     char recv_msg[64] = {0};
     while (1)
     {
@@ -49,7 +37,6 @@ void main(void)
         if (read_bytes > 0)
         {
             recv_msg[read_bytes] = '\0';
-            uart_puts("Read from RingBuffer: ");
             uart_puts(recv_msg);
         }
     }

@@ -6,6 +6,7 @@ SRCS = arch/ARM64/start.S \
        arch/ARM64/mmu.S \
        arch/ARM64/atomic_cas.S \
        arch/ARM64/cycle_counter.S \
+       gic/GIC.S \
        utils/print.c \
        ipc/memory.c \
        ipc/ring_buffer.c \
@@ -23,6 +24,9 @@ $(TARGET): $(SRCS)
 
 run: all
 	qemu-system-aarch64 -M virt -cpu cortex-a72 -m 2G -object memory-backend-file,id=mb,size=2G,mem-path=/dev/shm/qemu_amp_shmem,share=on -numa node,memdev=mb -nographic -kernel $(TARGET)
+
+debug: all
+	qemu-system-aarch64 -M virt -cpu cortex-a72 -m 2G -object memory-backend-file,id=mb,size=2G,mem-path=/dev/shm/qemu_amp_shmem,share=on -numa node,memdev=mb -nographic -kernel $(TARGET) -s -S
 
 clean:
 	rm -rf $(BUILD_DIR)

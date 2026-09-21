@@ -20,5 +20,3 @@ aarch64-linux-gnu-gcc -march=armv8.1-a -nostdlib -ffreestanding -g \
     "$ROOT_DIR/ipc/ring_buffer.S" \
     "$ROOT_DIR/main/main.c" \
     -o "$BUILD_DIR/kernel.elf"
-
-echo "[Build Complete] Output -> build/kernel.elf"
