@@ -7,6 +7,7 @@
 */
 #include <stdint.h>
 
+
 #define GIC_DIST_BASE          0x08000000ULL         // Distributor
 #define GIC_CPU_BASE           0x08010000ULL         // CPU Interface
 

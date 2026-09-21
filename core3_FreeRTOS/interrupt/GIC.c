@@ -2,9 +2,8 @@
 
 extern uint64_t get_timer_clock_frequency(void);
 extern uint64_t get_current_physical_count(void);
+extern void set_timer_interval(uint64_t ticks);
 
-typedef void (*isr_func_t)(void);
-isr_func_t isr_table[1020];
 /*
     Internal Isolation & Safety
     Purpose : Nevertheless the Core 0 crashed or get interrupt Storm,
@@ -53,27 +52,3 @@ void gic_cpu_init()
     GIC_INTERFACE_ON();
 }
 
-/**
-    @brief : 
-*/
-void timer_handler()
-{
-    uint64_t timer_freq = get_timer_clock_frequency();
-    uint64_t ticks = timer_freq / configTICK_RATE_HZ;
-    
-}
-
-/** 
-    @brief : 1020~1023 is special Interrupt.
-*/
-void gic_irq_handler()
-{
-    uint32_t iar = *(volatile uint32_t *)GICC_IAR;
-    uint32_t irq_id = iar & 0x3ff;
-    if (irq_id >= 1020)
-        return ;
-    if (irq_id == 30)
-        timer_handler();
-
-    *(volatile uint32_t *)GICC_EOIR = iar;
-}
