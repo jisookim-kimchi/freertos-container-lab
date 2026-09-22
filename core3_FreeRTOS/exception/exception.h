@@ -35,10 +35,4 @@ extern uint64_t get_elr_el1(void);
 #define FAULT_ADDRESS_SIZE_L2   0b000010                   // Level 2 Address size fault
 #define FAULT_ADDRESS_SIZE_L3   0b000011                   // Level 3 Address size fault
 
-
-
-/*
-    
-*/
-
 #endif

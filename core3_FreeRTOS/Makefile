@@ -11,6 +11,9 @@ SRCS = arch/ARM64/start.S \
        interrupt/irq.c \
        interrupt/timer/timer.S \
        interrupt/timer/timer.c \
+       exception/exception.S \
+       exception/exception.c \
+       exception/vector.S \
        utils/print.c \
        ipc/memory.c \
        ipc/ring_buffer.c \
