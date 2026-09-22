@@ -2,8 +2,20 @@
 #include "ipc/ring_buffer.h"
 #include "utils/print.h"
 #include "config.h"
+#include "../interrupt/GIC.h"
 #include "../interrupt/timer/timer.h"
 
+__attribute__((weak)) void FreeRTOS_Tick_Handler(void)
+{
+    static int tick_count = 0;
+    if (++tick_count % 100 == 0)
+    {
+        uart_puts("[Core 3] 1 Second Elapsed!\n");
+    }
+}
+
+extern void enable_interrupt(void);
+extern void disable_interrupt(void);
 extern uint64_t cycle_counter(void);
 
 void main(void)
@@ -22,9 +34,17 @@ void main(void)
     page_table_map(root_table, 0, &shared_read_area);
     page_table_map(root_table, 0, &shared_write_area);
     page_table_map(root_table, 0, &uart_area);
+    page_table_map(root_table, 0, &gic_area);
 
     enable_mmu((uintptr_t)root_table, TCR_VALUE, MAIR_VALUE);
     uart_puts("MMU ON\n");
+
+    gic_dist_init();
+    gic_cpu_init();
+    gic_enable_timer_irq();
+    timer_init();
+    enable_interrupt();
+    uart_puts("Timer interrupt is started\n");
 
     struct RingBuffer *rtos_read_rb = (struct RingBuffer *)(RTOS_SHARED_READ_ONLY_BASE);
     struct RingBuffer *rtos_write_rb = (struct RingBuffer *)(RTOS_SHARED_WRITE_WRITE_BASE);

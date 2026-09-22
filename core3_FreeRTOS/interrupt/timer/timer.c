@@ -23,4 +23,3 @@ void timer_init()
     set_timer_interval(ticks);
     enable_timer();
 }
-

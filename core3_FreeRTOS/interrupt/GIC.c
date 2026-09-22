@@ -52,3 +52,7 @@ void gic_cpu_init()
     GIC_INTERFACE_ON();
 }
 
+void gic_enable_timer_irq(void)
+{
+    *((volatile uint32_t *)GICD_ISENABLER(0)) = (1 << 30);
+}

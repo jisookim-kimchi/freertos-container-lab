@@ -5,6 +5,7 @@
 .global flush_tlb           //Translation Lookaside Buffer.
 .global switch_mmu_table    //change MMU table.
 
+
 //MSR: Move to System Register.
 //MRS: Move Register from System Register.
 

@@ -6,7 +6,11 @@ SRCS = arch/ARM64/start.S \
        arch/ARM64/mmu.S \
        arch/ARM64/atomic_cas.S \
        arch/ARM64/cycle_counter.S \
-       gic/GIC.S \
+       interrupt/GIC.S \
+       interrupt/GIC.c \
+       interrupt/irq.c \
+       interrupt/timer/timer.S \
+       interrupt/timer/timer.c \
        utils/print.c \
        ipc/memory.c \
        ipc/ring_buffer.c \

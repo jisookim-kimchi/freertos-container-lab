@@ -54,17 +54,8 @@ extern uint64_t get_gic_cpu_base(void);
 #define GICD_TYPER             (GIC_DIST_BASE + 0x004) // Interrupt Controller Type Reg.                          R/O
 #define GICD_IIDR              (GIC_DIST_BASE + 0x008) // Distributor Implementer Identification Reg.             R/O
 #define GICD_IGROUPR0          (GIC_DIST_BASE + 0x080) // Interrupt Group Reg. 0                                  R/W
-#define GICD_ISENABLER         (GIC_DIST_BASE + 0x100) // Interrupt Set-Enable Registers                          R/W
-#define GICD_ICENABLER         (GIC_DIST_BASE + 0x180) // Interrupt Clear-Enable Registers                        R/W
-#define GICD_ISPENDR           (GIC_DIST_BASE + 0x200) // Interrupt Set-Pending Registers                         R/W
-#define GICD_ICPENDR           (GIC_DIST_BASE + 0x280) // Interrupt Clear-Pending Registers                       R/W
 #define GICD_ISACTIVER         (GIC_DIST_BASE + 0x300) // Interrupt Set-Active Registers                          R/W
 #define GICD_ICACTIVER         (GIC_DIST_BASE + 0x380) // Interrupt Clear-Active Registers                        R/W
-#define GICD_IPRIORITYR0       (GIC_DIST_BASE + 0x400) // Interrupt Priority Registers 0-3                        R/W
-#define GICD_ITARGETSR         (GIC_DIST_BASE + 0x800) // Interrupt Processor Targets Registers[i]                R/W
-#define GICD_ICFGR             (GIC_DIST_BASE + 0xC00) // Interrupt Configuration Registers                       R/W
-#define GICD_PPISR             (GIC_DIST_BASE + 0xD00) // Private Peripheral Interrupt Status Register            R/O
-#define GICD_SPISR             (GIC_DIST_BASE + 0xD04) // Shared Peripheral Interrupt Status Registers            R/O
 #define GICD_SGIR              (GIC_DIST_BASE + 0xF00) // Software Generated Interrupt Register                   R/W
 #define GICD_CPENDSGIR         (GIC_DIST_BASE + 0xF10) // SGI Pending Registers                                   R/W
 #define GICD_SPENDSGIR         (GIC_DIST_BASE + 0xF20) // SGI Pending Registers                                   R/W                 
@@ -119,4 +110,8 @@ extern uint64_t get_gic_cpu_base(void);
 #define GIC_CPU_SET_BPR(bpr)          (*((volatile uint32_t *)GICC_BPR) = ((bpr) & 0b111))
 #define GIC_CPU_READ_BPR()            ((*((volatile uint32_t *)GICC_BPR)) & 0b111)
 
+
+void gic_dist_init(void);
+void gic_cpu_init(void);
+void gic_enable_timer_irq(void);
 #endif
