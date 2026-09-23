@@ -44,6 +44,12 @@ void main(void)
     uart_puts("MMU ON\n");
 
     set_vector_table();
+// volatile uint32_t *linux_mem = (volatile uint32_t*)0x40000000;
+// *linux_mem = "0x4";
+
+// volatile uint32_t *exceed_addr = (volatile uint32_t*)0x80000000;
+// *exceed_addr = "0x80000000";
+
     register_isr(TIMER_IRQ, timer_handler);
     register_isr(SGI_IRQ3, ipc_rx_handler);
 
