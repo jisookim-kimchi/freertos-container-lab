@@ -382,7 +382,23 @@
 
 	chosen {
 		stdout-path = "/pl011@9000000";
-		rng-seed = <0xbc70c7a0 0xde0ae86b 0xabf21391 0x7dee7db4 0x392bbf98 0x68a005a2 0x7d37311 0x46e52085>;
-		kaslr-seed = <0xfcf6739d 0xa30010e1>;
+		rng-seed = <0xc20190a8 0xbc396c0e 0xa888fffd 0xda945542 0xc57dad7e 0x6ff1af8c 0xa9a6a905 0x72cb13e6>;
+		kaslr-seed = <0xba8962c8 0x13aa052e>;
+	};
+
+	reserved-memory {
+		#address-cells = <0x02>;
+		#size-cells = <0x02>;
+		ranges;
+		
+		shm_ipc: shm@7e000000 {
+			reg = <0x00 0x7e000000 0x00 0x01000000>;
+			no-map;
+		};
+
+		rtos_mem: rtos@7f000000 {
+			reg = <0x00 0x7f000000 0x00 0x01000000>;
+			no-map;
+		};
 	};
 };
