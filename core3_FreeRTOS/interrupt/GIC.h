@@ -111,7 +111,7 @@ extern uint64_t get_gic_cpu_base(void);
 #define GIC_CPU_READ_BPR()            ((*((volatile uint32_t *)GICC_BPR)) & 0b111)
 
 
-void gic_dist_init(void);
-void gic_cpu_init(void);
-void gic_enable_timer_irq(void);
+void gic_dist_init();
+void gic_cpu_init();
+void gic_enable_irq(uint32_t irq_id);
 #endif

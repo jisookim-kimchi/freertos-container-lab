@@ -1,9 +1,12 @@
 
+.global irq_exception_handler
+
 //  This is a generic IRQ Handeler.
 //  stp : store pair : save two registers into stack memory.
 //  Usage : stp reg1, reg2, [memory, offset]
 //  [sp, #0] : location where to save. : stack pointer + 0 (offset).
-
+//  ldp : load pair.
+//  eret 
 irq_exception_handler:
     sub sp, sp, #256
     stp x0, x1, [sp, #0]

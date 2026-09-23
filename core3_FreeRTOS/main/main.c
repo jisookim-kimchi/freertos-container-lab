@@ -4,6 +4,10 @@
 #include "config.h"
 #include "../interrupt/GIC.h"
 #include "../interrupt/timer/timer.h"
+#include "../interrupt/irq.h"
+
+extern void set_vector_table(void);
+extern void ipc_rx_handler(void);
 
 __attribute__((weak)) void FreeRTOS_Tick_Handler(void)
 {
@@ -39,27 +43,20 @@ void main(void)
     enable_mmu((uintptr_t)root_table, TCR_VALUE, MAIR_VALUE);
     uart_puts("MMU ON\n");
 
+    set_vector_table();
+    register_isr(TIMER_IRQ, timer_handler);
+    register_isr(SGI_IRQ3, ipc_rx_handler);
+
     gic_dist_init();
     gic_cpu_init();
-    gic_enable_timer_irq();
+    gic_enable_irq(TIMER_IRQ);
+    gic_enable_irq(SGI_IRQ3);
+    gic_enable_irq(UART_IRQ);
     timer_init();
     enable_interrupt();
     uart_puts("Timer interrupt is started\n");
-
-    struct RingBuffer *rtos_read_rb = (struct RingBuffer *)(RTOS_SHARED_READ_ONLY_BASE);
-    struct RingBuffer *rtos_write_rb = (struct RingBuffer *)(RTOS_SHARED_WRITE_WRITE_BASE);
-    
-    RingBufferInit(rtos_write_rb);
-
-    char recv_msg[64] = {0};
     while (1)
     {
-        size_t read_bytes = RingBufferRead(rtos_read_rb, recv_msg, sizeof(recv_msg) - 1);
-        
-        if (read_bytes > 0)
-        {
-            recv_msg[read_bytes] = '\0';
-            uart_puts(recv_msg);
-        }
+        asm volatile("wfi");
     }
 }

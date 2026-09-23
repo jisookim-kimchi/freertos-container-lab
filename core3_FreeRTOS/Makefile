@@ -9,6 +9,7 @@ SRCS = arch/ARM64/start.S \
        interrupt/GIC.S \
        interrupt/GIC.c \
        interrupt/irq.c \
+       interrupt/irq.S \
        interrupt/timer/timer.S \
        interrupt/timer/timer.c \
        exception/exception.S \
@@ -18,6 +19,7 @@ SRCS = arch/ARM64/start.S \
        ipc/memory.c \
        ipc/ring_buffer.c \
        ipc/ring_buffer.S \
+       ipc/ipc_interrupt_handler.c \
        main/main.c
 
 BUILD_DIR = build
